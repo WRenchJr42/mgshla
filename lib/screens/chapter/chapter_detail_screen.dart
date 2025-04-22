@@ -3,21 +3,85 @@ import 'package:provider/provider.dart';
 
 import '../../models/chapter_model.dart';
 import '../../providers/content_provider.dart';
-import '../../utils/constants.dart';
+import '../lesson/lesson_view_screen.dart';
 
 class ChapterDetailScreen extends StatefulWidget {
-  final dynamic chapter;
-  
+  final ChapterModel chapter;
+
   ChapterDetailScreen({required this.chapter});
-  
+
   @override
   _ChapterDetailScreenState createState() => _ChapterDetailScreenState();
 }
 
 class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
   bool _isDownloading = false;
-  double _downloadProgress = 0.0;
-  
+
+  Future<void> _toggleBookmark() async {
+    final contentProvider = Provider.of<ContentProvider>(context, listen: false);
+    await contentProvider.toggleBookmark(widget.chapter.id);
+  }
+
+  Future<void> _downloadChapter() async {
+    if (widget.chapter.isDownloaded) {
+      // Already downloaded, go directly to lesson view
+      _openLessonView();
+      return;
+    }
+
+    setState(() {
+      _isDownloading = true;
+    });
+
+    try {
+      final contentProvider = Provider.of<ContentProvider>(context, listen: false);
+      final success = await contentProvider.downloadChapter(widget.chapter.id);
+
+      setState(() {
+        _isDownloading = false;
+      });
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chapter downloaded successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Open lesson view after successful download
+        _openLessonView();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to download chapter. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isDownloading = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _openLessonView() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LessonViewScreen(chapter: widget.chapter),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,378 +90,219 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
         actions: [
           Consumer<ContentProvider>(
             builder: (context, contentProvider, _) {
-              final isBookmarked = widget.chapter.isBookmarked;
+              // Find the updated chapter from the provider
+              final updatedChapter = contentProvider.chapters.firstWhere(
+                (c) => c.id == widget.chapter.id, 
+                orElse: () => widget.chapter
+              );
               
               return IconButton(
                 icon: Icon(
-                  isBookmarked ? Icons.bookmark : Icons.bookmark_outline,
-                  color: isBookmarked ? Colors.amber : null,
+                  updatedChapter.isBookmarked
+                      ? Icons.bookmark
+                      : Icons.bookmark_border,
                 ),
-                onPressed: () {
-                  contentProvider.toggleBookmark(widget.chapter.id);
-                },
-                tooltip: isBookmarked ? 'Remove Bookmark' : 'Add Bookmark',
+                onPressed: _toggleBookmark,
               );
             },
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Image
-            Container(
-              height: 200,
-              width: double.infinity,
-              color: Colors.blue.shade100,
-              child: Center(
-                child: Icon(
-                  Icons.menu_book,
-                  size: 80,
-                  color: Colors.blue.shade800,
-                ),
-              ),
-            ),
+      body: SafeArea(
+        child: Consumer<ContentProvider>(
+          builder: (context, contentProvider, _) {
+            // Find the updated chapter from the provider
+            final updatedChapter = contentProvider.chapters.firstWhere(
+              (c) => c.id == widget.chapter.id, 
+              orElse: () => widget.chapter
+            );
             
-            // Title and Tags
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+            return SingleChildScrollView(
+              padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.chapter.title,
-                    style: Theme.of(context).textTheme.headlineMedium,
+                  // Chapter Header
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          updatedChapter.title,
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Chip(
+                              label: Text(updatedChapter.grade),
+                              backgroundColor: Colors.blue.shade100,
+                            ),
+                            SizedBox(width: 8),
+                            Chip(
+                              label: Text(updatedChapter.subject),
+                              backgroundColor: Colors.green.shade100,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Chip(
+                              label: Text(updatedChapter.curriculum),
+                              backgroundColor: Colors.purple.shade100,
+                            ),
+                            SizedBox(width: 8),
+                            Chip(
+                              label: Text(updatedChapter.language),
+                              backgroundColor: Colors.orange.shade100,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                   
-                  SizedBox(height: 8),
-                  
-                  // Tags
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      _buildTag(widget.chapter.subject, Colors.blue),
-                      _buildTag(widget.chapter.grade, Colors.grey),
-                      _buildTag(widget.chapter.curriculum, Colors.purple),
-                      _buildTag(widget.chapter.semester, Colors.green),
-                    ],
-                  ),
-                  
-                  SizedBox(height: 16),
+                  SizedBox(height: 24),
                   
                   // Description
                   Text(
                     'Description',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  
                   SizedBox(height: 8),
-                  
                   Text(
-                    widget.chapter.description,
+                    updatedChapter.description,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                ],
-              ),
-            ),
-            
-            Divider(),
-            
-            // Download Status and Button
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                  
+                  SizedBox(height: 24),
+                  
+                  // Chapter Stats
                   Text(
-                    'Chapter Content',
+                    'Chapter Details',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  
                   SizedBox(height: 8),
-                  
-                  Consumer<ContentProvider>(
-                    builder: (context, contentProvider, _) {
-                      final isDownloaded = widget.chapter.isDownloaded;
-                      
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
                         children: [
-                          // Status
-                          Row(
-                            children: [
-                              Icon(
-                                isDownloaded
-                                    ? Icons.check_circle
-                                    : Icons.info_outline,
-                                color: isDownloaded ? Colors.green : Colors.orange,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                isDownloaded
-                                    ? 'Downloaded and ready to view'
-                                    : 'Download required to view content',
-                                style: TextStyle(
-                                  color: isDownloaded ? Colors.green : Colors.orange,
-                                ),
-                              ),
-                            ],
+                          _buildDetailRow('Total Pages', '${updatedChapter.totalPages}'),
+                          Divider(),
+                          _buildDetailRow('Semester', updatedChapter.semester),
+                          Divider(),
+                          _buildDetailRow(
+                            'Status',
+                            updatedChapter.isDownloaded
+                                ? 'Downloaded'
+                                : 'Not Downloaded',
+                            iconData: updatedChapter.isDownloaded
+                                ? Icons.check_circle
+                                : Icons.cloud_download,
+                            iconColor: updatedChapter.isDownloaded
+                                ? Colors.green
+                                : Colors.blue,
                           ),
-                          
-                          SizedBox(height: 16),
-                          
-                          // Action Button
-                          if (_isDownloading)
-                            Column(
-                              children: [
-                                LinearProgressIndicator(
-                                  value: _downloadProgress,
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Downloading... ${(_downloadProgress * 100).toInt()}%',
-                                  style: TextStyle(color: Colors.blue),
-                                ),
-                              ],
-                            )
-                          else if (isDownloaded)
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('PDF Viewer will be implemented in the next phase'),
-                                        ),
-                                      );
-                                    },
-                                    icon: Icon(Icons.visibility),
-                                    label: Text('View PDF'),
-                                    style: ElevatedButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(vertical: 12),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 8),
-                                IconButton(
-                                  onPressed: () {
-                                    _showDeleteConfirmation(context, contentProvider);
-                                  },
-                                  icon: Icon(Icons.delete),
-                                  color: Colors.red,
-                                  tooltip: 'Delete Download',
-                                ),
-                              ],
-                            )
-                          else
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                _downloadChapter(contentProvider);
-                              },
-                              icon: Icon(Icons.download),
-                              label: Text('Download Chapter'),
-                              style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
                         ],
-                      );
-                    },
+                      ),
+                    ),
+                  ),
+                  
+                  SizedBox(height: 32),
+                  
+                  // Action Buttons
+                  Row(
+                    children: [
+                      // Prepare Button (access content)
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _isDownloading ? null : _downloadChapter,
+                          icon: _isDownloading
+                              ? SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Icon(updatedChapter.isDownloaded
+                                  ? Icons.visibility
+                                  : Icons.download),
+                          label: Text(updatedChapter.isDownloaded
+                              ? 'View Content'
+                              : 'Download & Prepare'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      // Teach Button (open in presentation mode)
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: updatedChapter.isDownloaded
+                              ? () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LessonViewScreen(
+                                        chapter: updatedChapter,
+                                        teachMode: true,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              : null,
+                          icon: Icon(Icons.present_to_all),
+                          label: Text('Teach'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, {IconData? iconData, Color? iconColor}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
             ),
-            
-            Divider(),
-            
-            // Lessons Section
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Lessons in this Chapter',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  
-                  SizedBox(height: 8),
-                  
-                  Consumer<ContentProvider>(
-                    builder: (context, contentProvider, _) {
-                      final isDownloaded = widget.chapter.isDownloaded;
-                      
-                      return isDownloaded
-                          ? _buildLessonsList()
-                          : Column(
-                              children: [
-                                Icon(
-                                  Icons.lock,
-                                  size: 48,
-                                  color: Colors.grey,
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Download this chapter to access lessons',
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                              ],
-                            );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  // Build a tag widget
-  Widget _buildTag(String text, MaterialColor color) {
-    return Container(
-      margin: EdgeInsets.only(right: 4, bottom: 4),
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.shade100,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 12,
-          color: color.shade800,
-        ),
-      ),
-    );
-  }
-  
-  // Build lessons list
-  Widget _buildLessonsList() {
-    return Column(
-      children: [
-        ListTile(
-          title: Text('Introduction to the Chapter'),
-          leading: Icon(Icons.article),
-          trailing: Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Lessons will be implemented in the next phase')),
-            );
-          },
-        ),
-        Divider(height: 1),
-        ListTile(
-          title: Text('Key Concepts'),
-          leading: Icon(Icons.lightbulb),
-          trailing: Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Lessons will be implemented in the next phase')),
-            );
-          },
-        ),
-        Divider(height: 1),
-        ListTile(
-          title: Text('Practice Exercises'),
-          leading: Icon(Icons.edit),
-          trailing: Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Lessons will be implemented in the next phase')),
-            );
-          },
-        ),
-        
-        SizedBox(height: 16),
-        
-        OutlinedButton.icon(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Lessons will be implemented in the next phase')),
-            );
-          },
-          icon: Icon(Icons.list),
-          label: Text('View All Lessons'),
-        ),
-      ],
-    );
-  }
-  
-  // Download chapter
-  Future<void> _downloadChapter(ContentProvider contentProvider) async {
-    setState(() {
-      _isDownloading = true;
-      _downloadProgress = 0.0;
-    });
-    
-    // Simulate progress
-    for (int i = 1; i <= 10; i++) {
-      await Future.delayed(Duration(milliseconds: 300));
-      setState(() {
-        _downloadProgress = i / 10;
-      });
-    }
-    
-    // Perform actual download
-    final success = await contentProvider.downloadChapter(widget.chapter.id);
-    
-    setState(() {
-      _isDownloading = false;
-    });
-    
-    if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppConstants.errorDownloadFailed),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppConstants.successDownloadComplete),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
-  }
-  
-  // Show delete confirmation dialog
-  void _showDeleteConfirmation(BuildContext context, ContentProvider contentProvider) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Download'),
-        content: Text('Are you sure you want to delete this downloaded chapter? You will need to download it again to view its content.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text('Cancel'),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final success = await contentProvider.deleteDownloadedChapter(widget.chapter.id);
-              
-              if (!success) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to delete downloaded chapter'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            child: Text('Delete'),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+          Row(
+            children: [
+              if (iconData != null) ...[
+                Icon(
+                  iconData,
+                  size: 16,
+                  color: iconColor,
+                ),
+                SizedBox(width: 4),
+              ],
+              Text(value),
+            ],
           ),
         ],
       ),

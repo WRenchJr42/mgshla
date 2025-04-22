@@ -1,7 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 
-void main() {
-  runApp(MyApp());
+import 'theme/app_theme.dart';
+import 'providers/auth_provider.dart';
+import 'providers/user_provider.dart';
+import 'providers/content_provider.dart';
+import 'screens/auth/phone_email_screen.dart';
+import 'screens/home/home_screen.dart';
+import 'services/storage_service.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Lock orientation to portrait mode by default
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  
+  // Initialize services
+  final storageService = StorageService();
+  await storageService.init();
+  
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => ContentProvider()),
+        Provider.value(value: storageService),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -9,75 +41,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Educational App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: SimpleHomeScreen(),
-    );
-  }
-}
-
-class SimpleHomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Educational App Demo'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.school,
-              size: 100,
-              color: Colors.blue,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Welcome to Educational App',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Your learning companion',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            SizedBox(height: 40),
-            ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Feature coming soon!')),
-                );
-              },
-              icon: Icon(Icons.book),
-              label: Text('Browse Chapters'),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
-            ),
-            SizedBox(height: 20),
-            OutlinedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Login feature coming soon!')),
-                );
-              },
-              icon: Icon(Icons.login),
-              label: Text('Login / Register'),
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
-            ),
-          ],
-        ),
+      theme: AppTheme.lightTheme,
+      debugShowCheckedModeBanner: false,
+      home: Consumer<AuthProvider>(
+        builder: (context, authProvider, _) {
+          return authProvider.isAuthenticated 
+              ? HomeScreen() 
+              : PhoneEmailScreen();
+        },
       ),
     );
   }

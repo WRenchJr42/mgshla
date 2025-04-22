@@ -6,10 +6,6 @@ import '../../widgets/drawer_menu.dart';
 import 'lesson_view_screen.dart';
 
 class LessonsListScreen extends StatefulWidget {
-  final String? chapterId;
-  
-  LessonsListScreen({this.chapterId});
-  
   @override
   _LessonsListScreenState createState() => _LessonsListScreenState();
 }
