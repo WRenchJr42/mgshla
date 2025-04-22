@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/user_provider.dart';
 import '../screens/home/home_screen.dart';
+import '../screens/chapter/chapter_selection_screen.dart';
+import '../screens/lesson/lessons_list_screen.dart';
 import '../screens/bookmarks/bookmarks_screen.dart';
 import '../screens/downloads/downloads_screen.dart';
 import '../screens/auth/phone_email_screen.dart';
@@ -78,13 +80,13 @@ class DrawerMenu extends StatelessWidget {
                 context,
                 'Chapters',
                 Icons.menu_book,
-                () => _navigateTo(context, HomeScreen()),
+                () => _navigateTo(context, ChapterSelectionScreen()),
               ),
               _buildNavItem(
                 context,
                 'Lessons',
                 Icons.school,
-                () => _navigateTo(context, HomeScreen()),
+                () => _navigateTo(context, LessonsListScreen()),
               ),
               _buildNavItem(
                 context,

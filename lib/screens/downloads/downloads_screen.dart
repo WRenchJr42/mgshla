@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/content_provider.dart';
-import '../../widgets/chapter_card.dart';
+import '../../widgets/drawer_menu.dart';
+import '../lesson/lesson_view_screen.dart';
 
 class DownloadsScreen extends StatelessWidget {
   @override
@@ -11,6 +12,7 @@ class DownloadsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('My Downloads'),
       ),
+      drawer: DrawerMenu(),
       body: SafeArea(
         child: Consumer<ContentProvider>(
           builder: (context, contentProvider, _) {
@@ -34,73 +36,151 @@ class DownloadsScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      'No downloaded chapters yet',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade700,
-                      ),
+                      'No downloaded content',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Downloaded chapters will be available offline',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Icon(Icons.home),
-                      label: Text('Go to Home'),
+                      'Downloaded chapters will appear here',
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
                 ),
               );
             }
             
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Downloaded chapters are available offline',
-                          style: TextStyle(color: Colors.blue.shade700),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
+            return ListView.builder(
+              padding: EdgeInsets.all(16),
+              itemCount: downloadedChapters.length,
+              itemBuilder: (context, index) {
+                final chapter = downloadedChapters[index];
+                
+                return Card(
+                  margin: EdgeInsets.only(bottom: 16),
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.75,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                      ),
-                      itemCount: downloadedChapters.length,
-                      itemBuilder: (context, index) {
-                        return ChapterCard(
-                          chapter: downloadedChapters[index],
-                          showDeleteOption: true,
-                        );
-                      },
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Icon(
+                                Icons.download_done,
+                                color: Colors.green,
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    chapter.title,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    '${chapter.subject} | ${chapter.grade}',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                _showDeleteConfirmation(context, contentProvider, chapter.id);
+                              },
+                              icon: Icon(Icons.delete_outline, color: Colors.red),
+                              label: Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: Colors.red.shade200),
+                              ),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LessonViewScreen(
+                                      chapter: chapter,
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: Icon(Icons.visibility),
+                              label: Text('View'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                );
+              },
             );
           },
         ),
+      ),
+    );
+  }
+  
+  void _showDeleteConfirmation(BuildContext context, ContentProvider contentProvider, String chapterId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Download'),
+        content: Text('Are you sure you want to delete this downloaded chapter? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              
+              // Delete the downloaded chapter
+              await contentProvider.deleteDownloadedChapter(chapterId);
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Chapter deleted successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            child: Text('Delete'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+          ),
+        ],
       ),
     );
   }
