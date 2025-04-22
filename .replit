@@ -2,6 +2,7 @@ modules = ["flutter"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["flutter"]
 
 [workflows]
 runButton = "Project"
@@ -13,14 +14,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Flutter Educational App"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "flutter_app"
+args = "Educational App"
 
 [[workflows.workflow]]
-name = "Flutter Educational App"
+name = "Educational App"
 author = "agent"
 
 [workflows.workflow.metadata]
@@ -31,22 +28,16 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd /home/runner && flutter pub get && flutter run -d web-server --web-port=5000 --web-hostname=0.0.0.0"
+args = "flutter run -d web-server --web-hostname=0.0.0.0 --web-port=5000"
 waitForPort = 5000
-
-[[workflows.workflow]]
-name = "flutter_app"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080"
 
 [deployment]
 run = ["sh", "-c", "cd /home/runner && flutter pub get && flutter run -d web-server --web-port=5000 --web-hostname=0.0.0.0"]
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
+[[ports]]
+localPort = 8080
+externalPort = 80
