@@ -5,6 +5,14 @@ import '../providers/content_provider.dart';
 import '../models/chapter_model.dart';
 
 class FilterDialog extends StatefulWidget {
+  final FilterOptions filterOptions;
+  final Map<String, String> activeFilters;
+  
+  FilterDialog({
+    required this.filterOptions,
+    required this.activeFilters,
+  });
+  
   @override
   _FilterDialogState createState() => _FilterDialogState();
 }
@@ -56,30 +64,24 @@ class _FilterDialogState extends State<FilterDialog> with SingleTickerProviderSt
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Consumer<ContentProvider>(
-                    builder: (context, contentProvider, _) {
-                      final hasFilters = contentProvider.activeFilters.isNotEmpty;
-                      
-                      return hasFilters
-                          ? TextButton.icon(
-                              onPressed: () {
-                                contentProvider.clearAllFilters();
-                              },
-                              icon: Icon(
-                                Icons.clear_all,
-                                color: Colors.white70,
-                                size: 16,
-                              ),
-                              label: Text(
-                                'Clear All',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            )
-                          : SizedBox.shrink();
-                    },
-                  ),
+                  widget.activeFilters.isNotEmpty
+                      ? TextButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context, {});
+                          },
+                          icon: Icon(
+                            Icons.clear_all,
+                            color: Colors.white70,
+                            size: 16,
+                          ),
+                          label: Text(
+                            'Clear All',
+                            style: TextStyle(
+                              color: Colors.white70,
+                            ),
+                          ),
+                        )
+                      : SizedBox.shrink(),
                 ],
               ),
             ),
@@ -132,83 +134,81 @@ class _FilterDialogState extends State<FilterDialog> with SingleTickerProviderSt
   }
 
   Widget _buildFilterOptions(String filterType) {
-    return Consumer<ContentProvider>(
-      builder: (context, contentProvider, _) {
-        final filterOptions = contentProvider.filterOptions;
-        final activeFilters = contentProvider.activeFilters;
-        List<String> options = [];
+    final Map<String, String> selectedFilters = {};
+    selectedFilters.addAll(widget.activeFilters);
+    
+    List<String> options = [];
+    
+    switch (filterType) {
+      case 'grade':
+        options = widget.filterOptions.grades;
+        break;
+      case 'subject':
+        options = widget.filterOptions.subjects;
+        break;
+      case 'semester':
+        options = widget.filterOptions.semesters;
+        break;
+      case 'curriculum':
+        options = widget.filterOptions.curriculums;
+        break;
+      case 'language':
+        options = widget.filterOptions.languages;
+        break;
+    }
+    
+    return ListView.builder(
+      padding: EdgeInsets.all(8),
+      itemCount: options.length,
+      itemBuilder: (context, index) {
+        final option = options[index];
+        final isSelected = widget.activeFilters[filterType] == option;
         
-        switch (filterType) {
-          case 'grade':
-            options = filterOptions.grades;
-            break;
-          case 'subject':
-            options = filterOptions.subjects;
-            break;
-          case 'semester':
-            options = filterOptions.semesters;
-            break;
-          case 'curriculum':
-            options = filterOptions.curriculums;
-            break;
-          case 'language':
-            options = filterOptions.languages;
-            break;
-        }
-        
-        return ListView.builder(
-          padding: EdgeInsets.all(8),
-          itemCount: options.length,
-          itemBuilder: (context, index) {
-            final option = options[index];
-            final isSelected = activeFilters[filterType] == option;
-            
-            return Card(
-              elevation: isSelected ? 2 : 0,
-              margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(
-                  color: isSelected
-                      ? Theme.of(context).primaryColor
-                      : Colors.transparent,
-                  width: 2,
-                ),
-              ),
-              child: InkWell(
-                onTap: () {
-                  if (isSelected) {
-                    contentProvider.clearFilter(filterType);
-                  } else {
-                    contentProvider.setFilter(filterType, option);
-                  }
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          option,
-                          style: TextStyle(
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                          ),
-                        ),
+        return Card(
+          elevation: isSelected ? 2 : 0,
+          margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          child: InkWell(
+            onTap: () {
+              if (isSelected) {
+                selectedFilters.remove(filterType);
+              } else {
+                selectedFilters[filterType] = option;
+              }
+              Navigator.pop(context, selectedFilters);
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      option,
+                      style: TextStyle(
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
-                      if (isSelected)
-                        Icon(
-                          Icons.check_circle,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                    ],
+                    ),
                   ),
-                ),
+                  if (isSelected)
+                    Icon(
+                      Icons.check_circle,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                ],
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
