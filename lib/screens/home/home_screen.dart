@@ -1,63 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
-import '../../providers/content_provider.dart';
 import '../../widgets/drawer_menu.dart';
-import '../../widgets/chapter_card.dart';
-import '../../widgets/filter_button.dart';
+import '../chapter/subjects_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _searchController = TextEditingController();
-  bool _isSearching = false;
-  List<String> _searchResults = [];
+  final _supabase = Supabase.instance.client;
+  Map<String, int> _subjectsCount = {};
+  bool _isLoading = true;
+  String? _error;
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadSubjectsCount();
   }
 
-  void _toggleSearch() {
-    setState(() {
-      _isSearching = !_isSearching;
-      if (!_isSearching) {
-        _searchController.clear();
+  Future<void> _loadSubjectsCount() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      final List<FileObject> files = await _supabase.storage
+          .from('pdf')
+          .list();
+
+      final Map<String, int> counts = {};
+      for (var file in files) {
+        final parts = file.name.split('/');
+        if (parts.isNotEmpty) {
+          final subject = parts[0];
+          counts[subject] = (counts[subject] ?? 0) + 1;
+        }
       }
-    });
+
+      setState(() {
+        _subjectsCount = counts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _error = e.toString();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search chapters...',
-                  hintStyle: TextStyle(color: Colors.white70),
-                  border: InputBorder.none,
-                ),
-                style: TextStyle(color: Colors.white),
-                onChanged: (value) {
-                  setState(() {});
-                },
-                autofocus: true,
-              )
-            : Text('Home'),
+        title: const Text('Home'),
         actions: [
-          IconButton(
-            icon: Icon(_isSearching ? Icons.close : Icons.search),
-            onPressed: _toggleSearch,
-          ),
-          FilterButton(),
           Consumer<UserProvider>(
             builder: (context, userProvider, _) {
               final user = userProvider.user;
@@ -78,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             user?.firstName.isNotEmpty == true
                                 ? user!.firstName[0].toUpperCase()
                                 : '?',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -91,73 +96,119 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      drawer: DrawerMenu(),
+      drawer: const DrawerMenu(),
       body: SafeArea(
-        child: Consumer<ContentProvider>(
-          builder: (context, contentProvider, _) {
-            if (contentProvider.isLoading) {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-
-            List<dynamic> chaptersToShow;
-            
-            if (_isSearching && _searchController.text.isNotEmpty) {
-              chaptersToShow = contentProvider.searchChapters(_searchController.text.trim());
-            } else {
-              chaptersToShow = contentProvider.filteredChapters;
-            }
-            
-            if (chaptersToShow.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.search_off,
-                      size: 64,
-                      color: Colors.grey,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text(_error!, textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadSubjectsCount,
+                          child: const Text('Retry'),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 16),
-                    Text(
-                      _isSearching && _searchController.text.isNotEmpty
-                          ? 'No chapters found matching "${_searchController.text}"'
-                          : 'No chapters available with the current filters',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Consumer<UserProvider>(
+                          builder: (context, userProvider, _) {
+                            final user = userProvider.user;
+                            return Text(
+                              'Welcome back, ${user?.firstName ?? 'Student'}!',
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Your Subjects',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 16),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 1.2,
+                          ),
+                          itemCount: _subjectsCount.length,
+                          itemBuilder: (context, index) {
+                            final subject = _subjectsCount.keys.elementAt(index);
+                            final count = _subjectsCount[subject] ?? 0;
+                            
+                            return Card(
+                              elevation: 4,
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SubjectsScreen(
+                                        initialSubject: subject,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        _getSubjectIcon(subject),
+                                        size: 48,
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        subject.toUpperCase(),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      Text(
+                                        '$count chapters',
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                    if (_isSearching && _searchController.text.isNotEmpty)
-                      TextButton(
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {});
-                        },
-                        child: Text('Clear Search'),
-                      ),
-                  ],
-                ),
-              );
-            }
-
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.75,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemCount: chaptersToShow.length,
-                itemBuilder: (context, index) {
-                  return ChapterCard(chapter: chaptersToShow[index]);
-                },
-              ),
-            );
-          },
-        ),
+                  ),
       ),
     );
+  }
+
+  IconData _getSubjectIcon(String subject) {
+    switch (subject.toLowerCase()) {
+      case 'physics':
+        return Icons.science;
+      case 'chemistry':
+        return Icons.science_outlined;
+      case 'biology':
+        return Icons.biotech;
+      default:
+        return Icons.book;
+    }
   }
 }

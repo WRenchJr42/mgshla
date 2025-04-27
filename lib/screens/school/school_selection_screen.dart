@@ -5,6 +5,8 @@ import '../../providers/user_provider.dart';
 import '../chapter/chapter_selection_screen.dart';
 
 class SchoolSelectionScreen extends StatefulWidget {
+  const SchoolSelectionScreen({super.key});
+
   @override
   _SchoolSelectionScreenState createState() => _SchoolSelectionScreenState();
 }
@@ -27,10 +29,10 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Add New School'),
+        title: const Text('Add New School'),
         content: TextField(
           controller: _newSchoolController,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             labelText: 'School Name',
             hintText: 'Enter the name of your school',
           ),
@@ -41,7 +43,7 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -71,14 +73,14 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
                 });
                 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                     content: Text('Failed to add school. Please try again.'),
                     backgroundColor: Colors.red,
                   ),
                 );
               }
             },
-            child: Text('Add'),
+            child: const Text('Add'),
           ),
         ],
       ),
@@ -88,7 +90,7 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
   Future<void> _continueWithSelectedSchool() async {
     if (_selectedSchoolId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please select a school.'),
           backgroundColor: Colors.red,
         ),
@@ -112,7 +114,7 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
       // Navigate to chapter selection
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => ChapterSelectionScreen()),
+        MaterialPageRoute(builder: (context) => const ChapterSelectionScreen()),
       );
     } catch (e) {
       setState(() {
@@ -120,7 +122,7 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Failed to save school selection. Please try again.'),
           backgroundColor: Colors.red,
         ),
@@ -132,7 +134,7 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Select Your School'),
+        title: const Text('Select Your School'),
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
@@ -147,7 +149,7 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
                 textAlign: TextAlign.center,
               ),
               
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               
               Text(
                 'Search for your school or add a new one',
@@ -155,17 +157,17 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
                 textAlign: TextAlign.center,
               ),
               
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               
               // Search Box
               TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.search),
+                  prefixIcon: const Icon(Icons.search),
                   hintText: 'Search for your school',
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: Icon(Icons.clear),
+                          icon: const Icon(Icons.clear),
                           onPressed: () {
                             _searchController.clear();
                             setState(() {});
@@ -178,27 +180,27 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
                 },
               ),
               
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // Add School Button
               OutlinedButton.icon(
                 onPressed: _isAddingSchool ? null : _showAddSchoolDialog,
                 icon: _isAddingSchool
-                    ? SizedBox(
+                    ? const SizedBox(
                         height: 16,
                         width: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                         ),
                       )
-                    : Icon(Icons.add),
-                label: Text('Add New School'),
+                    : const Icon(Icons.add),
+                label: const Text('Add New School'),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: Theme.of(context).primaryColor),
                 ),
               ),
               
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // School List
               Expanded(
@@ -214,7 +216,7 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
                               ? 'No schools available. Add a new one.'
                               : 'No schools found matching "$searchQuery"',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey),
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       );
                     }
@@ -227,7 +229,7 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
                         
                         return Card(
                           elevation: isSelected ? 4 : 1,
-                          margin: EdgeInsets.symmetric(vertical: 4),
+                          margin: const EdgeInsets.symmetric(vertical: 4),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                             side: BorderSide(
@@ -245,20 +247,20 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
                             },
                             borderRadius: BorderRadius.circular(8),
                             child: Padding(
-                              padding: EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(16),
                               child: Row(
                                 children: [
                                   CircleAvatar(
                                     backgroundColor: Colors.blue.withOpacity(0.2),
                                     child: Text(
                                       school.name[0].toUpperCase(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.blue,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: 16),
+                                  const SizedBox(width: 16),
                                   Expanded(
                                     child: Text(
                                       school.name,
@@ -286,13 +288,16 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
                 ),
               ),
               
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // Continue Button
               ElevatedButton(
                 onPressed: _isLoading ? null : _continueWithSelectedSchool,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
                 child: _isLoading
-                    ? SizedBox(
+                    ? const SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
@@ -300,10 +305,7 @@ class _SchoolSelectionScreenState extends State<SchoolSelectionScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : Text('Continue'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                ),
+                    : const Text('Continue'),
               ),
             ],
           ),

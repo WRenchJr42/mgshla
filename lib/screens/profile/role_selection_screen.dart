@@ -5,6 +5,8 @@ import '../../providers/user_provider.dart';
 import '../school/school_selection_screen.dart';
 
 class RoleSelectionScreen extends StatefulWidget {
+  const RoleSelectionScreen({super.key});
+
   @override
   _RoleSelectionScreenState createState() => _RoleSelectionScreenState();
 }
@@ -57,7 +59,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   Future<void> _saveRole() async {
     if (_selectedRole == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please select a role.'),
           backgroundColor: Colors.red,
         ),
@@ -81,7 +83,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
       // Navigate to school selection
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => SchoolSelectionScreen()),
+        MaterialPageRoute(builder: (context) => const SchoolSelectionScreen()),
       );
     } catch (e) {
       setState(() {
@@ -89,7 +91,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Failed to save role. Please try again.'),
           backgroundColor: Colors.red,
         ),
@@ -101,7 +103,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Who are you?'),
+        title: const Text('Who are you?'),
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
@@ -116,7 +118,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 textAlign: TextAlign.center,
               ),
               
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               
               Text(
                 'Choose the option that best describes you',
@@ -124,7 +126,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 textAlign: TextAlign.center,
               ),
               
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               
               // Role options
               Expanded(
@@ -136,7 +138,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                     
                     return Card(
                       elevation: isSelected ? 4 : 1,
-                      margin: EdgeInsets.symmetric(vertical: 8),
+                      margin: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                         side: BorderSide(
@@ -154,7 +156,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
-                          padding: EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(16),
                           child: Row(
                             children: [
                               CircleAvatar(
@@ -165,19 +167,19 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                                   color: role['color'],
                                 ),
                               ),
-                              SizedBox(width: 16),
+                              const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       role['title'],
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    SizedBox(height: 4),
+                                    const SizedBox(height: 4),
                                     Text(
                                       role['description'],
                                       style: TextStyle(
@@ -201,13 +203,16 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 ),
               ),
               
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // Continue Button
               ElevatedButton(
                 onPressed: _isLoading ? null : _saveRole,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
                 child: _isLoading
-                    ? SizedBox(
+                    ? const SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
@@ -215,10 +220,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : Text('Continue'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                ),
+                    : const Text('Continue'),
               ),
             ],
           ),

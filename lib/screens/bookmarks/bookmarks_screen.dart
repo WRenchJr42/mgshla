@@ -6,20 +6,22 @@ import '../../widgets/drawer_menu.dart';
 import '../chapter/chapter_detail_screen.dart';
 
 class BookmarksScreen extends StatelessWidget {
+  const BookmarksScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bookmarks'),
+        title: const Text('Bookmarks'),
       ),
-      drawer: DrawerMenu(),
+      drawer: const DrawerMenu(),
       body: SafeArea(
         child: Consumer<ContentProvider>(
           builder: (context, contentProvider, _) {
             final bookmarkedChapters = contentProvider.bookmarkedChapters;
             
             if (contentProvider.isLoading) {
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             }
@@ -29,17 +31,17 @@ class BookmarksScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.bookmark_border,
                       size: 64,
                       color: Colors.grey,
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text(
                       'No bookmarked chapters',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       'Bookmark chapters to find them here',
                       style: Theme.of(context).textTheme.bodyMedium,
@@ -50,21 +52,21 @@ class BookmarksScreen extends StatelessWidget {
             }
             
             return ListView.builder(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               itemCount: bookmarkedChapters.length,
               itemBuilder: (context, index) {
                 final chapter = bookmarkedChapters[index];
                 
                 return Card(
-                  margin: EdgeInsets.only(bottom: 16),
+                  margin: const EdgeInsets.only(bottom: 16),
                   child: ListTile(
                     leading: Container(
-                      padding: EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.blue.shade50,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.bookmark,
                         color: Colors.blue,
                       ),
@@ -72,9 +74,9 @@ class BookmarksScreen extends StatelessWidget {
                     title: Text(chapter.title),
                     subtitle: Text(
                       '${chapter.subject} | ${chapter.grade}',
-                      style: TextStyle(fontSize: 12),
+                      style: const TextStyle(fontSize: 12),
                     ),
-                    trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
                       Navigator.push(
                         context,

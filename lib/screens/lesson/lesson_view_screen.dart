@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:io';
 
 import '../../models/chapter_model.dart';
@@ -9,7 +8,7 @@ class LessonViewScreen extends StatefulWidget {
   final ChapterModel chapter;
   final bool teachMode;
 
-  LessonViewScreen({
+  const LessonViewScreen({super.key, 
     required this.chapter, 
     this.teachMode = false
   });
@@ -64,7 +63,7 @@ class _LessonViewScreenState extends State<LessonViewScreen> {
 
   void _openPdfViewer() {
     // Small delay to allow the UI to update before navigation
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -91,7 +90,7 @@ class _LessonViewScreenState extends State<LessonViewScreen> {
       body: SafeArea(
         child: Center(
           child: _isLoading
-              ? Column(
+              ? const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CircularProgressIndicator(),
@@ -103,32 +102,32 @@ class _LessonViewScreenState extends State<LessonViewScreen> {
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.error_outline,
                           size: 64,
                           color: Colors.red,
                         ),
-                        SizedBox(height: 16),
-                        Text(
+                        const SizedBox(height: 16),
+                        const Text(
                           'Failed to load lesson content',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 8),
-                        Text(
+                        const SizedBox(height: 8),
+                        const Text(
                           'The content may be missing or corrupted.',
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: _prepareContent,
-                          child: Text('Try Again'),
+                          child: const Text('Try Again'),
                         ),
                       ],
                     )
-                  : SizedBox.shrink(), // Will navigate away immediately
+                  : const SizedBox.shrink(), // Will navigate away immediately
         ),
       ),
     );

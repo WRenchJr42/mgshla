@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/user_model.dart';
 import '../models/school_model.dart';
-import '../services/storage_service.dart';
 
 class UserProvider with ChangeNotifier {
+  final _supabase = Supabase.instance.client;
   UserModel? _user;
   List<SchoolModel> _schools = [];
   bool _isLoading = false;
-
-  // Service instance for storage
-  final StorageService _storageService = StorageService();
 
   // Getters
   UserModel? get user => _user;
@@ -24,15 +21,61 @@ class UserProvider with ChangeNotifier {
     _loadSchools();
   }
 
-  // Load user data from local storage
+  // Load user data from Supabase
   Future<void> _loadUserData() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final userData = await _storageService.getUserData();
-      if (userData != null) {
-        _user = UserModel.fromJson(jsonDecode(userData));
+      final authUser = _supabase.auth.currentUser;
+      if (authUser != null) {
+        final response = await _supabase
+          .from('users')
+          .select()
+          .eq('id', authUser.id)
+          .maybeSingle();
+        
+        if (response != null) {
+          _user = UserModel.fromJson({
+            'id': response['id'],
+            'phoneNumber': response['phone_number'],
+            'email': response['email'],
+            'username': response['username'],
+            'firstName': response['first_name'] ?? '',
+            'lastName': response['last_name'] ?? '',
+            'dateOfBirth': response['date_of_birth'] ?? DateTime.now().toIso8601String(),
+            'gender': response['gender'] ?? '',
+            'profileImagePath': response['profile_image_path'],
+            'role': response['role'] ?? '',
+            'schoolId': response['school_id'],
+          });
+        } else {
+          // Create initial user record
+          final userData = {
+            'id': authUser.id,
+            'email': authUser.email,
+            'created_at': DateTime.now().toIso8601String(),
+            'first_name': '',
+            'last_name': '',
+            'date_of_birth': DateTime.now().toIso8601String(),
+            'gender': '',
+            'role': ''
+          };
+
+          await _supabase.from('users').insert(userData);
+          
+          _user = UserModel(
+            id: authUser.id,
+            email: authUser.email,
+            firstName: '',
+            lastName: '',
+            dateOfBirth: DateTime.now(),
+            gender: '',
+            role: '',
+            profileImagePath: null,
+            schoolId: null,
+          );
+        }
       }
     } catch (e) {
       debugPrint('Error loading user data: $e');
@@ -42,78 +85,89 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  // Load schools from local storage or initialize with mock data
+  // Load schools from Supabase
   Future<void> _loadSchools() async {
     try {
-      final schoolsData = await _storageService.getSchools();
-      if (schoolsData != null) {
-        final List<dynamic> decodedData = jsonDecode(schoolsData);
-        _schools = decodedData.map((data) => SchoolModel.fromJson(data)).toList();
-      } else {
-        // Initialize with some mock schools if none are stored
-        _schools = [
-          SchoolModel(id: '1', name: 'Delhi Public School'),
-          SchoolModel(id: '2', name: 'Kendriya Vidyalaya'),
-          SchoolModel(id: '3', name: 'St. Xavier\'s High School'),
-          SchoolModel(id: '4', name: 'DAV Public School'),
-          SchoolModel(id: '5', name: 'Ryan International School'),
-        ];
-        // Save the mock schools
-        await _saveSchools();
-      }
+      final response = await _supabase
+        .from('schools')
+        .select('id, name, created_at');
+      
+      _schools = (response as List).map((data) => SchoolModel(
+        id: data['id'],
+        name: data['name'],
+      )).toList();
     } catch (e) {
       debugPrint('Error loading schools: $e');
     }
     notifyListeners();
   }
 
-  // Save user data to local storage
-  Future<void> _saveUserData() async {
-    if (_user != null) {
-      await _storageService.saveUserData(jsonEncode(_user!.toJson()));
-    }
-  }
-
-  // Save schools to local storage
-  Future<void> _saveSchools() async {
-    final schoolsJson = jsonEncode(_schools.map((school) => school.toJson()).toList());
-    await _storageService.saveSchools(schoolsJson);
-  }
-
-  // Create new user
-  Future<void> createUser({
-    required String phoneOrEmail,
-    required String authMethod,
-  }) async {
+  // Create or update user with email
+  Future<void> createOrUpdateUserWithEmail(String email) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final String id = DateTime.now().millisecondsSinceEpoch.toString();
-      
-      _user = UserModel(
-        id: id,
-        phoneNumber: authMethod == 'phone' ? phoneOrEmail : null,
-        email: authMethod == 'email' ? phoneOrEmail : null,
-        firstName: '',
-        lastName: '',
-        dateOfBirth: DateTime.now(),
-        gender: '',
-        role: '',
-        profileImagePath: null,
-        schoolId: null,
-      );
+      final authUser = _supabase.auth.currentUser;
+      if (authUser != null) {
+        // Check if user exists
+        final existingUser = await _supabase
+          .from('users')
+          .select()
+          .eq('id', authUser.id)
+          .maybeSingle();
 
-      await _saveUserData();
+        if (existingUser != null) {
+          // Update existing user
+          _user = UserModel.fromJson({
+            'id': existingUser['id'],
+            'phoneNumber': existingUser['phone_number'],
+            'email': existingUser['email'],
+            'username': existingUser['username'],
+            'firstName': existingUser['first_name'],
+            'lastName': existingUser['last_name'],
+            'dateOfBirth': existingUser['date_of_birth'],
+            'gender': existingUser['gender'],
+            'profileImagePath': existingUser['profile_image_path'],
+            'role': existingUser['role'],
+            'schoolId': existingUser['school_id'],
+          });
+        } else {
+          // Create new user
+          final userData = {
+            'id': authUser.id,
+            'email': email,
+            'created_at': DateTime.now().toIso8601String(),
+            'first_name': '',
+            'last_name': '',
+            'date_of_birth': DateTime.now().toIso8601String(),
+            'gender': '',
+            'role': '',
+          };
+
+          await _supabase.from('users').insert(userData);
+          _user = UserModel(
+            id: authUser.id,
+            email: email,
+            firstName: '',
+            lastName: '',
+            dateOfBirth: DateTime.now(),
+            gender: '',
+            role: '',
+            profileImagePath: null,
+            schoolId: null,
+          );
+        }
+      }
     } catch (e) {
-      debugPrint('Error creating user: $e');
+      debugPrint('Error creating/updating user: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  // Update user profile information
+  // Update user profile
   Future<void> updateProfile({
     String? firstName,
     String? lastName,
@@ -127,15 +181,26 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _user = _user!.copyWith(
-        firstName: firstName,
-        lastName: lastName,
-        dateOfBirth: dateOfBirth,
-        gender: gender,
-        profileImagePath: profileImagePath,
-      );
+      final updates = {
+        if (firstName != null) 'first_name': firstName,
+        if (lastName != null) 'last_name': lastName,
+        if (dateOfBirth != null) 'date_of_birth': dateOfBirth.toIso8601String(),
+        if (gender != null) 'gender': gender,
+        if (profileImagePath != null) 'profile_image_path': profileImagePath,
+      };
 
-      await _saveUserData();
+      await _supabase
+        .from('users')
+        .update(updates)
+        .eq('id', _user!.id);
+
+      _user = _user!.copyWith(
+        firstName: firstName ?? _user!.firstName,
+        lastName: lastName ?? _user!.lastName,
+        dateOfBirth: dateOfBirth ?? _user!.dateOfBirth,
+        gender: gender ?? _user!.gender,
+        profileImagePath: profileImagePath ?? _user!.profileImagePath,
+      );
     } catch (e) {
       debugPrint('Error updating profile: $e');
     } finally {
@@ -152,8 +217,12 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await _supabase
+        .from('users')
+        .update({'role': role})
+        .eq('id', _user!.id);
+
       _user = _user!.copyWith(role: role);
-      await _saveUserData();
     } catch (e) {
       debugPrint('Error setting user role: $e');
     } finally {
@@ -170,8 +239,12 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      await _supabase
+        .from('users')
+        .update({'school_id': schoolId})
+        .eq('id', _user!.id);
+
       _user = _user!.copyWith(schoolId: schoolId);
-      await _saveUserData();
     } catch (e) {
       debugPrint('Error setting user school: $e');
     } finally {
@@ -186,12 +259,17 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final String id = DateTime.now().millisecondsSinceEpoch.toString();
-      final newSchool = SchoolModel(id: id, name: name);
-      
+      final response = await _supabase
+        .from('schools')
+        .insert({'name': name})
+        .select()
+        .single();
+
+      final newSchool = SchoolModel(
+        id: response['id'],
+        name: response['name'],
+      );
       _schools.add(newSchool);
-      await _saveSchools();
-      
       return newSchool;
     } catch (e) {
       debugPrint('Error adding school: $e');
@@ -216,7 +294,6 @@ class UserProvider with ChangeNotifier {
   // Clear user data (for logout)
   Future<void> clearUserData() async {
     _user = null;
-    await _storageService.clearUserData();
     notifyListeners();
   }
 }

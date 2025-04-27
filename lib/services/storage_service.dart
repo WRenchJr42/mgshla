@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'dart:io';
 
 import '../utils/constants.dart';
@@ -79,18 +80,45 @@ class StorageService {
 
   // FILE STORAGE METHODS
   // Save a file to local storage
-  Future<String?> saveFile(
-    String fileName,
-    List<int> bytes, {
-    String? customDirectory,
-  }) async {
+  Future<String?> saveFile(String fileName, Uint8List bytes) async {
     try {
-      final directory = customDirectory ?? downloadDirectoryPath;
-      if (directory == null) return null;
+      if (_documentsDirectory == null) {
+        final directory = await getApplicationDocumentsDirectory();
+        _documentsDirectory = directory.path;
+      }
 
-      final file = File('$directory/$fileName');
-      await file.writeAsBytes(bytes);
-      return file.path;
+      final pdfDir = Directory('$_documentsDirectory/${AppConstants.pdfDownloadsDir}');
+      if (!await pdfDir.exists()) {
+        await pdfDir.create(recursive: true);
+      }
+
+      final filePath = '${pdfDir.path}/$fileName';
+      final file = File(filePath);
+
+      // Create parent directories if they don't exist
+      final parent = file.parent;
+      if (!await parent.exists()) {
+        await parent.create(recursive: true);
+      }
+
+      // Write file with flush to ensure it's written to disk
+      await file.writeAsBytes(bytes, flush: true);
+      
+      // Verify the file was written correctly
+      if (!await file.exists()) {
+        debugPrint('File was not saved successfully: $fileName');
+        return null;
+      }
+
+      final savedSize = await file.length();
+      if (savedSize != bytes.length) {
+        debugPrint('File size mismatch. Expected: ${bytes.length}, Got: $savedSize');
+        await file.delete();
+        return null;
+      }
+
+      debugPrint('File saved successfully: $filePath');
+      return filePath;
     } catch (e) {
       debugPrint('Error saving file: $e');
       return null;
@@ -113,27 +141,48 @@ class StorageService {
   }
 
   // Check if a file exists
-  Future<bool> fileExists(String filePath) async {
+  Future<bool> fileExists(String path) async {
     try {
-      final file = File(filePath);
+      final file = File(path);
       return await file.exists();
     } catch (e) {
-      debugPrint('Error checking if file exists: $e');
+      debugPrint('Error checking file existence: $e');
       return false;
     }
   }
 
   // Get file size
-  Future<int> getFileSize(String filePath) async {
+  Future<int> getFileSize(String path) async {
     try {
-      final file = File(filePath);
-      if (await file.exists()) {
-        return await file.length();
-      }
-      return 0;
+      final file = File(path);
+      if (!await file.exists()) return 0;
+      return await file.length();
     } catch (e) {
       debugPrint('Error getting file size: $e');
       return 0;
+    }
+  }
+
+  // Download a file from a URL
+  Future<Uint8List?> downloadFile(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      
+      if (response.statusCode != 200) {
+        debugPrint('Failed to download file. Status code: ${response.statusCode}');
+        return null;
+      }
+
+      final bytes = response.bodyBytes;
+      if (bytes.isEmpty) {
+        debugPrint('Downloaded file is empty');
+        return null;
+      }
+
+      return bytes;
+    } catch (e) {
+      debugPrint('Error downloading file: $e');
+      return null;
     }
   }
 }

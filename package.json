@@ -1,0 +1,28 @@
+{
+  "name": "workspace",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "shared_preferences": "^1.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "description": "A new Flutter project.",
+  "version": "1.0.0",
+  "main": "server.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

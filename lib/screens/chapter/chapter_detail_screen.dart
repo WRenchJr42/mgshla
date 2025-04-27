@@ -8,7 +8,7 @@ import '../lesson/lesson_view_screen.dart';
 class ChapterDetailScreen extends StatefulWidget {
   final ChapterModel chapter;
 
-  ChapterDetailScreen({required this.chapter});
+  const ChapterDetailScreen({super.key, required this.chapter});
 
   @override
   _ChapterDetailScreenState createState() => _ChapterDetailScreenState();
@@ -43,7 +43,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Chapter downloaded successfully!'),
             backgroundColor: Colors.green,
           ),
@@ -53,7 +53,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
         _openLessonView();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Failed to download chapter. Please try again.'),
             backgroundColor: Colors.red,
           ),
@@ -65,7 +65,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('An error occurred. Please try again.'),
           backgroundColor: Colors.red,
         ),
@@ -86,7 +86,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chapter Details'),
+        title: const Text('Chapter Details'),
         actions: [
           Consumer<ContentProvider>(
             builder: (context, contentProvider, _) {
@@ -118,7 +118,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
             );
             
             return SingleChildScrollView(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -128,7 +128,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                       color: Theme.of(context).primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -136,28 +136,28 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                           updatedChapter.title,
                           style: Theme.of(context).textTheme.headlineMedium,
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Row(
                           children: [
                             Chip(
                               label: Text(updatedChapter.grade),
                               backgroundColor: Colors.blue.shade100,
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Chip(
                               label: Text(updatedChapter.subject),
                               backgroundColor: Colors.green.shade100,
                             ),
                           ],
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Row(
                           children: [
                             Chip(
                               label: Text(updatedChapter.curriculum),
                               backgroundColor: Colors.purple.shade100,
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Chip(
                               label: Text(updatedChapter.language),
                               backgroundColor: Colors.orange.shade100,
@@ -168,36 +168,36 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                     ),
                   ),
                   
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // Description
                   Text(
                     'Description',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     updatedChapter.description,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // Chapter Stats
                   Text(
                     'Chapter Details',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Card(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
                           _buildDetailRow('Total Pages', '${updatedChapter.totalPages}'),
-                          Divider(),
+                          const Divider(),
                           _buildDetailRow('Semester', updatedChapter.semester),
-                          Divider(),
+                          const Divider(),
                           _buildDetailRow(
                             'Status',
                             updatedChapter.isDownloaded
@@ -215,7 +215,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                     ),
                   ),
                   
-                  SizedBox(height: 32),
+                  const SizedBox(height: 32),
                   
                   // Action Buttons
                   Row(
@@ -225,7 +225,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _isDownloading ? null : _downloadChapter,
                           icon: _isDownloading
-                              ? SizedBox(
+                              ? const SizedBox(
                                   height: 20,
                                   width: 20,
                                   child: CircularProgressIndicator(
@@ -244,7 +244,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(width: 16),
+                      const SizedBox(width: 16),
                       // Teach Button (open in presentation mode)
                       Expanded(
                         child: ElevatedButton.icon(
@@ -261,8 +261,8 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                                   );
                                 }
                               : null,
-                          icon: Icon(Icons.present_to_all),
-                          label: Text('Teach'),
+                          icon: const Icon(Icons.present_to_all),
+                          label: const Text('Teach'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                           ),
@@ -281,13 +281,13 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
 
   Widget _buildDetailRow(String label, String value, {IconData? iconData, Color? iconColor}) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -299,7 +299,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                   size: 16,
                   color: iconColor,
                 ),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
               ],
               Text(value),
             ],

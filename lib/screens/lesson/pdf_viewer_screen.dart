@@ -9,7 +9,7 @@ class PdfViewerScreen extends StatefulWidget {
   final ChapterModel chapter;
   final bool teachMode;
 
-  PdfViewerScreen({
+  const PdfViewerScreen({super.key, 
     required this.chapter,
     this.teachMode = false,
   });
@@ -24,11 +24,52 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
   bool _isFullScreen = false;
   bool _isLoading = true;
   bool _hasError = false;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _setInitialOrientation();
+    _validateAndLoadPdf();
+  }
+
+  Future<void> _validateAndLoadPdf() async {
+    if (widget.chapter.localPath == null) {
+      setState(() {
+        _hasError = true;
+        _errorMessage = 'PDF path is not available';
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final file = File(widget.chapter.localPath!);
+      if (!await file.exists()) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = 'PDF file not found';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty || bytes.length < 4) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = 'Invalid PDF file';
+          _isLoading = false;
+        });
+        return;
+      }
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _errorMessage = 'Error loading PDF: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _setInitialOrientation() async {
@@ -80,6 +121,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
 
   @override
   void dispose() {
+    _pdfViewerController.dispose();
     // Reset to portrait mode when leaving
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -105,7 +147,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
             : AppBar(
                 title: Text(
                   widget.chapter.title,
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 actions: [
                   IconButton(
@@ -135,51 +177,53 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
               Positioned.fill(
                 child: Container(
                   color: Colors.grey.shade900,
-                  child: widget.chapter.localPath != null
-                      ? SfPdfViewer.file(
-                          File(widget.chapter.localPath!),
-                          controller: _pdfViewerController,
-                          onDocumentLoaded: (details) {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                          },
-                          onDocumentLoadFailed: (details) {
-                            setState(() {
-                              _isLoading = false;
-                              _hasError = true;
-                            });
-                          },
-                          pageSpacing: 2.0,
-                          enableDoubleTapZooming: true,
-                        )
-                      : Center(
+                  child: _hasError
+                      ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.error_outline,
                                 size: 64,
                                 color: Colors.red,
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Text(
-                                'Failed to load PDF',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                _errorMessage ?? 'Failed to load PDF',
+                                style: const TextStyle(color: Colors.white),
+                                textAlign: TextAlign.center,
                               ),
                             ],
                           ),
+                        )
+                      : SfPdfViewer.file(
+                          File(widget.chapter.localPath!),
+                          controller: _pdfViewerController,
+                          onDocumentLoaded: (details) {
+                            if (mounted) {
+                              setState(() {
+                                _isLoading = false;
+                              });
+                            }
+                          },
+                          onDocumentLoadFailed: (details) {
+                            if (mounted) {
+                              setState(() {
+                                _isLoading = false;
+                                _hasError = true;
+                                _errorMessage = 'Failed to load PDF: ${details.error}';
+                              });
+                            }
+                          },
+                          pageSpacing: 2.0,
+                          enableDoubleTapZooming: true,
                         ),
                 ),
               ),
               
               // Loading indicator
               if (_isLoading)
-                Center(
+                const Center(
                   child: CircularProgressIndicator(),
                 ),
               
@@ -192,8 +236,8 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
                     heroTag: 'prev',
                     onPressed: _previousPage,
                     mini: true,
-                    child: Icon(Icons.arrow_back),
                     backgroundColor: Colors.black45,
+                    child: const Icon(Icons.arrow_back),
                   ),
                 ),
               
@@ -204,8 +248,8 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
                   child: FloatingActionButton(
                     heroTag: 'next',
                     onPressed: _nextPage,
-                    child: Icon(Icons.arrow_forward),
                     backgroundColor: Colors.black45,
+                    child: const Icon(Icons.arrow_forward),
                   ),
                 ),
               
@@ -220,7 +264,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: IconButton(
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.fullscreen_exit,
                         color: Colors.white,
                       ),
@@ -237,14 +281,14 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
                   bottom: 16,
                   child: Center(
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         'Page ${_pdfViewerController.pageNumber} of ${_pdfViewerController.pageCount}',
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),

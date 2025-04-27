@@ -6,6 +6,8 @@ import '../../widgets/drawer_menu.dart';
 import 'lesson_view_screen.dart';
 
 class LessonsListScreen extends StatefulWidget {
+  const LessonsListScreen({super.key});
+
   @override
   _LessonsListScreenState createState() => _LessonsListScreenState();
 }
@@ -15,16 +17,16 @@ class _LessonsListScreenState extends State<LessonsListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Lessons'),
+        title: const Text('Lessons'),
       ),
-      drawer: DrawerMenu(),
+      drawer: const DrawerMenu(),
       body: SafeArea(
         child: Consumer<ContentProvider>(
           builder: (context, contentProvider, _) {
             final downloadedChapters = contentProvider.downloadedChapters;
             
             if (contentProvider.isLoading) {
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             }
@@ -34,28 +36,28 @@ class _LessonsListScreenState extends State<LessonsListScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.menu_book,
                       size: 64,
                       color: Colors.grey,
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text(
                       'No lessons available',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       'Download chapters to view lessons',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      icon: Icon(Icons.download),
-                      label: Text('Go to Chapters'),
+                      icon: const Icon(Icons.download),
+                      label: const Text('Go to Chapters'),
                     ),
                   ],
                 ),
@@ -63,13 +65,13 @@ class _LessonsListScreenState extends State<LessonsListScreen> {
             }
             
             return ListView.builder(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               itemCount: downloadedChapters.length,
               itemBuilder: (context, index) {
                 final chapter = downloadedChapters[index];
                 
                 return Card(
-                  margin: EdgeInsets.only(bottom: 16),
+                  margin: const EdgeInsets.only(bottom: 16),
                   child: InkWell(
                     onTap: () {
                       Navigator.push(
@@ -82,14 +84,14 @@ class _LessonsListScreenState extends State<LessonsListScreen> {
                       );
                     },
                     child: Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
                               Container(
-                                padding: EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).primaryColor.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
@@ -99,19 +101,19 @@ class _LessonsListScreenState extends State<LessonsListScreen> {
                                   color: Theme.of(context).primaryColor,
                                 ),
                               ),
-                              SizedBox(width: 16),
+                              const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       chapter.title,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16,
                                       ),
                                     ),
-                                    SizedBox(height: 4),
+                                    const SizedBox(height: 4),
                                     Text(
                                       '${chapter.subject} | ${chapter.grade}',
                                       style: TextStyle(
@@ -122,10 +124,10 @@ class _LessonsListScreenState extends State<LessonsListScreen> {
                                   ],
                                 ),
                               ),
-                              Icon(Icons.arrow_forward_ios, size: 16),
+                              const Icon(Icons.arrow_forward_ios, size: 16),
                             ],
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -146,10 +148,10 @@ class _LessonsListScreenState extends State<LessonsListScreen> {
                                         ),
                                       );
                                     },
-                                    icon: Icon(Icons.visibility),
-                                    label: Text('Study'),
+                                    icon: const Icon(Icons.visibility),
+                                    label: const Text('Study'),
                                   ),
-                                  SizedBox(width: 8),
+                                  const SizedBox(width: 8),
                                   TextButton.icon(
                                     onPressed: () {
                                       Navigator.push(
@@ -162,8 +164,8 @@ class _LessonsListScreenState extends State<LessonsListScreen> {
                                         ),
                                       );
                                     },
-                                    icon: Icon(Icons.present_to_all),
-                                    label: Text('Teach'),
+                                    icon: const Icon(Icons.present_to_all),
+                                    label: const Text('Teach'),
                                   ),
                                 ],
                               ),

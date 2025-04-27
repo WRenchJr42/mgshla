@@ -8,6 +8,8 @@ import '../../utils/validators.dart';
 import 'role_selection_screen.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
+  const ProfileSetupScreen({super.key});
+
   @override
   _ProfileSetupScreenState createState() => _ProfileSetupScreenState();
 }
@@ -33,10 +35,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       final user = userProvider.user!;
       _firstNameController.text = user.firstName;
       _lastNameController.text = user.lastName;
-      if (user.dateOfBirth != null) {
-        _selectedDate = user.dateOfBirth;
-      }
-      if (user.gender.isNotEmpty) {
+      _selectedDate = user.dateOfBirth;
+          if (user.gender.isNotEmpty) {
         _selectedGender = user.gender;
       }
     }
@@ -81,7 +81,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
     if (_selectedGender.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please select your gender.'),
           backgroundColor: Colors.red,
         ),
@@ -119,7 +119,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       // Navigate to role selection
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => RoleSelectionScreen()),
+        MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
       );
     } catch (e) {
       setState(() {
@@ -127,7 +127,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Failed to save profile. Please try again.'),
           backgroundColor: Colors.red,
         ),
@@ -139,7 +139,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile Setup'),
+        title: const Text('Profile Setup'),
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
@@ -157,7 +157,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     textAlign: TextAlign.center,
                   ),
                   
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   
                   Text(
                     'Please provide your information',
@@ -165,7 +165,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     textAlign: TextAlign.center,
                   ),
                   
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // Profile Image
                   Center(
@@ -192,7 +192,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                             radius: 20,
                             backgroundColor: Theme.of(context).primaryColor,
                             child: IconButton(
-                              icon: Icon(
+                              icon: const Icon(
                                 Icons.camera_alt,
                                 color: Colors.white,
                                 size: 20,
@@ -205,37 +205,37 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     ),
                   ),
                   
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // First Name
                   TextFormField(
                     controller: _firstNameController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'First Name*',
                       prefixIcon: Icon(Icons.person_outline),
                     ),
                     validator: (value) => Validators.validateName(value, 'First name'),
                   ),
                   
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   
                   // Last Name
                   TextFormField(
                     controller: _lastNameController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Last Name*',
                       prefixIcon: Icon(Icons.person_outline),
                     ),
                     validator: (value) => Validators.validateName(value, 'Last name'),
                   ),
                   
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   
                   // Date of Birth
                   InkWell(
                     onTap: () => _selectDate(context),
                     child: InputDecorator(
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Date of Birth*',
                         prefixIcon: Icon(Icons.calendar_today),
                       ),
@@ -245,7 +245,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     ),
                   ),
                   
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // Gender
                   Text(
@@ -256,7 +256,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     ),
                   ),
                   
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   
                   Wrap(
                     spacing: 8,
@@ -279,13 +279,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     }).toList(),
                   ),
                   
-                  SizedBox(height: 32),
+                  const SizedBox(height: 32),
                   
                   // Save Button
                   ElevatedButton(
                     onPressed: _isLoading ? null : _saveProfile,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
                     child: _isLoading
-                        ? SizedBox(
+                        ? const SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
@@ -293,10 +296,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : Text('Continue'),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                    ),
+                        : const Text('Continue'),
                   ),
                 ],
               ),

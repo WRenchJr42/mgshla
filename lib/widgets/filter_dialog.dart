@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/content_provider.dart';
-import '../models/chapter_model.dart';
 
 class FilterDialog extends StatefulWidget {
+  const FilterDialog({super.key});
+
   @override
   _FilterDialogState createState() => _FilterDialogState();
 }
@@ -31,7 +32,7 @@ class _FilterDialogState extends State<FilterDialog> with SingleTickerProviderSt
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Container(
+      child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.6,
         child: Column(
           children: [
@@ -39,16 +40,16 @@ class _FilterDialogState extends State<FilterDialog> with SingleTickerProviderSt
             Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
                 ),
               ),
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Filter Chapters',
                     style: TextStyle(
                       color: Colors.white,
@@ -65,19 +66,19 @@ class _FilterDialogState extends State<FilterDialog> with SingleTickerProviderSt
                               onPressed: () {
                                 contentProvider.clearAllFilters();
                               },
-                              icon: Icon(
+                              icon: const Icon(
                                 Icons.clear_all,
                                 color: Colors.white70,
                                 size: 16,
                               ),
-                              label: Text(
+                              label: const Text(
                                 'Clear All',
                                 style: TextStyle(
                                   color: Colors.white70,
                                 ),
                               ),
                             )
-                          : SizedBox.shrink();
+                          : const SizedBox.shrink();
                     },
                   ),
                 ],
@@ -94,7 +95,7 @@ class _FilterDialogState extends State<FilterDialog> with SingleTickerProviderSt
               tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
             ),
             
-            Divider(height: 1),
+            const Divider(height: 1),
             
             // Tab Content
             Expanded(
@@ -120,7 +121,7 @@ class _FilterDialogState extends State<FilterDialog> with SingleTickerProviderSt
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: Text('Close'),
+                    child: const Text('Close'),
                   ),
                 ],
               ),
@@ -157,7 +158,7 @@ class _FilterDialogState extends State<FilterDialog> with SingleTickerProviderSt
         }
         
         return ListView.builder(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           itemCount: options.length,
           itemBuilder: (context, index) {
             final option = options[index];
@@ -165,7 +166,7 @@ class _FilterDialogState extends State<FilterDialog> with SingleTickerProviderSt
             
             return Card(
               elevation: isSelected ? 2 : 0,
-              margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+              margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
                 side: BorderSide(
@@ -185,7 +186,7 @@ class _FilterDialogState extends State<FilterDialog> with SingleTickerProviderSt
                 },
                 borderRadius: BorderRadius.circular(8),
                 child: Padding(
-                  padding: EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
                       Expanded(

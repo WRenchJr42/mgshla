@@ -11,14 +11,14 @@ class AppTheme {
 
   static ThemeData lightTheme = ThemeData(
     primaryColor: primaryColor,
-    colorScheme: ColorScheme.light(
+    colorScheme: const ColorScheme.light(
       primary: primaryColor,
       secondary: accentColor,
-      background: bgColor,
+      surface: bgColor,
     ),
     scaffoldBackgroundColor: bgColor,
     fontFamily: 'Roboto',
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       headlineLarge: TextStyle(
         color: textColor,
         fontSize: 28.0,
@@ -48,7 +48,7 @@ class AppTheme {
         fontSize: 14.0,
       ),
     ),
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: primaryColor,
       elevation: 0,
       centerTitle: true,
@@ -63,11 +63,11 @@ class AppTheme {
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        textStyle: TextStyle(
+        textStyle: const TextStyle(
           fontSize: 16.0,
           fontWeight: FontWeight.w600,
         ),
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
@@ -84,13 +84,13 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: primaryColor, width: 2.0),
+        borderSide: const BorderSide(color: primaryColor, width: 2.0),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: errorColor, width: 2.0),
+        borderSide: const BorderSide(color: errorColor, width: 2.0),
       ),
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       filled: true,
       fillColor: Colors.white,
       hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -101,7 +101,7 @@ class AppTheme {
         borderRadius: BorderRadius.circular(12.0),
       ),
       color: Colors.white,
-      margin: EdgeInsets.all(8.0),
+      margin: const EdgeInsets.all(8.0),
     ),
   );
 }

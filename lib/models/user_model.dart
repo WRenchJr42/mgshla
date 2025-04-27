@@ -2,6 +2,7 @@ class UserModel {
   final String id; // Unique identifier
   final String? phoneNumber;
   final String? email;
+  final String? username;
   final String firstName;
   final String lastName;
   final DateTime dateOfBirth;
@@ -14,6 +15,7 @@ class UserModel {
     required this.id,
     this.phoneNumber,
     this.email,
+    this.username,
     required this.firstName,
     required this.lastName,
     required this.dateOfBirth,
@@ -28,6 +30,7 @@ class UserModel {
     String? id,
     String? phoneNumber,
     String? email,
+    String? username,
     String? firstName,
     String? lastName,
     DateTime? dateOfBirth,
@@ -40,6 +43,7 @@ class UserModel {
       id: id ?? this.id,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       email: email ?? this.email,
+      username: username ?? this.username,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
@@ -56,6 +60,7 @@ class UserModel {
       'id': id,
       'phoneNumber': phoneNumber,
       'email': email,
+      'username': username,
       'firstName': firstName,
       'lastName': lastName,
       'dateOfBirth': dateOfBirth.toIso8601String(),
@@ -72,6 +77,7 @@ class UserModel {
       id: json['id'],
       phoneNumber: json['phoneNumber'],
       email: json['email'],
+      username: json['username'],
       firstName: json['firstName'],
       lastName: json['lastName'],
       dateOfBirth: DateTime.parse(json['dateOfBirth']),

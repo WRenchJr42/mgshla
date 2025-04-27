@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/auth_provider.dart';
-import '../providers/user_provider.dart';
+import 'package:educational_app/providers/user_provider.dart' as user_provider;
+import 'package:educational_app/providers/auth_provider.dart' as auth_provider;
+
 import '../screens/home/home_screen.dart';
-import '../screens/chapter/chapter_selection_screen.dart';
+import '../screens/chapter/subjects_screen.dart';
 import '../screens/lesson/lessons_list_screen.dart';
 import '../screens/bookmarks/bookmarks_screen.dart';
 import '../screens/downloads/downloads_screen.dart';
-import '../screens/auth/phone_email_screen.dart';
+import '../screens/auth/login_screen.dart';
 
 class DrawerMenu extends StatelessWidget {
+  const DrawerMenu({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Consumer<UserProvider>(
+      child: Consumer<user_provider.UserProvider>(
         builder: (context, userProvider, _) {
           final user = userProvider.user;
-          
+          if (user == null) {
+            return const Text('No user available');
+          }
+
           return ListView(
             padding: EdgeInsets.zero,
             children: [
@@ -32,13 +38,13 @@ class DrawerMenu extends StatelessWidget {
                     CircleAvatar(
                       radius: 30,
                       backgroundColor: Colors.white,
-                      backgroundImage: user?.profileImagePath != null
-                          ? FileImage(user!.profileImagePath as dynamic)
+                      backgroundImage: user.profileImagePath != null
+                          ? FileImage(user.profileImagePath as dynamic)
                           : null,
-                      child: user?.profileImagePath == null
+                      child: user.profileImagePath == null
                           ? Text(
-                              user?.firstName.isNotEmpty == true
-                                  ? user!.firstName[0].toUpperCase()
+                              user.firstName.isNotEmpty
+                                  ? user.firstName[0].toUpperCase()
                                   : '?',
                               style: TextStyle(
                                 fontSize: 24,
@@ -48,19 +54,19 @@ class DrawerMenu extends StatelessWidget {
                             )
                           : null,
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
-                      user?.fullName ?? 'User',
-                      style: TextStyle(
+                      user.fullName,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      user?.email ?? user?.phoneNumber ?? '',
-                      style: TextStyle(
+                      user.email ?? user.phoneNumber ?? user.username ?? '',
+                      style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 12,
                       ),
@@ -74,34 +80,34 @@ class DrawerMenu extends StatelessWidget {
                 context,
                 'Home',
                 Icons.home,
-                () => _navigateTo(context, HomeScreen()),
+                () => _navigateTo(context, const HomeScreen()),
               ),
               _buildNavItem(
                 context,
-                'Chapters',
-                Icons.menu_book,
-                () => _navigateTo(context, ChapterSelectionScreen()),
+                'Subjects',
+                Icons.school,
+                () => _navigateTo(context, const SubjectsScreen()),
               ),
               _buildNavItem(
                 context,
                 'Lessons',
                 Icons.school,
-                () => _navigateTo(context, LessonsListScreen()),
+                () => _navigateTo(context, const LessonsListScreen()),
               ),
               _buildNavItem(
                 context,
                 'Bookmarks',
                 Icons.bookmark,
-                () => _navigateTo(context, BookmarksScreen()),
+                () => _navigateTo(context, const BookmarksScreen()),
               ),
               _buildNavItem(
                 context,
                 'My Downloads',
                 Icons.download_done,
-                () => _navigateTo(context, DownloadsScreen()),
+                () => _navigateTo(context, const DownloadsScreen()),
               ),
               
-              Divider(),
+              const Divider(),
               
               // Settings and Logout
               _buildNavItem(
@@ -150,22 +156,22 @@ class DrawerMenu extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Logout'),
-        content: Text('Are you sure you want to logout?'),
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               
               // Perform logout
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              final userProvider = Provider.of<UserProvider>(context, listen: false);
+              final authProvider = Provider.of<auth_provider.AuthProvider>(context, listen: false);
+              final userProvider = Provider.of<user_provider.UserProvider>(context, listen: false);
               
               authProvider.logout();
               userProvider.clearUserData();
@@ -173,13 +179,13 @@ class DrawerMenu extends StatelessWidget {
               // Navigate to login screen
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => PhoneEmailScreen()),
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
               );
             },
-            child: Text('Logout'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
             ),
+            child: const Text('Logout'),
           ),
         ],
       ),

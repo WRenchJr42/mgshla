@@ -13,11 +13,13 @@ dependencies:
   shared_preferences: ^2.2.2
   path_provider: ^2.1.1
   image_picker: ^1.0.4
-  syncfusion_flutter_pdfviewer: ^23.1.44
+  syncfusion_flutter_pdfviewer: ^24.1.41
   cupertino_icons: ^1.0.6
   flutter_otp_text_field: ^1.1.1
   intl: ^0.18.1
-
+  flutter_file_downloader: ^2.1.0
+  archive: ^4.0.7
+  supabase_flutter: ^2.8.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -25,5 +27,4 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/dummy.pdf
+  

@@ -9,7 +9,7 @@ class ChapterCard extends StatelessWidget {
   final ChapterModel chapter;
   final bool showDeleteOption;
 
-  ChapterCard({
+  const ChapterCard({super.key, 
     required this.chapter,
     this.showDeleteOption = false,
   });
@@ -51,7 +51,7 @@ class ChapterCard extends StatelessWidget {
                     Row(
                       children: [
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: _getSubjectColor(chapter.subject).withOpacity(0.2),
                             borderRadius: BorderRadius.circular(4),
@@ -65,7 +65,7 @@ class ChapterCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Text(
                           chapter.grade,
                           style: TextStyle(
@@ -76,12 +76,12 @@ class ChapterCard extends StatelessWidget {
                       ],
                     ),
                     
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     
                     // Chapter Title
                     Text(
                       chapter.title,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -89,7 +89,7 @@ class ChapterCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     
                     // Chapter Description
                     Text(
@@ -102,7 +102,7 @@ class ChapterCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     
-                    Spacer(),
+                    const Spacer(),
                     
                     // Bottom Row - Actions
                     Row(
@@ -110,13 +110,13 @@ class ChapterCard extends StatelessWidget {
                       children: [
                         // Download Status
                         if (chapter.isDownloaded)
-                          Icon(
+                          const Icon(
                             Icons.download_done,
                             size: 16,
                             color: Colors.green,
                           )
                         else
-                          Icon(
+                          const Icon(
                             Icons.download_outlined,
                             size: 16,
                             color: Colors.grey,
@@ -157,7 +157,7 @@ class ChapterCard extends StatelessWidget {
       onTap: () {
         _showDeleteConfirmation(context);
       },
-      child: Icon(
+      child: const Icon(
         Icons.delete_outline,
         size: 20,
         color: Colors.red,
@@ -169,14 +169,14 @@ class ChapterCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Download'),
-        content: Text('Are you sure you want to delete this downloaded chapter?'),
+        title: const Text('Delete Download'),
+        content: const Text('Are you sure you want to delete this downloaded chapter?'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -184,10 +184,10 @@ class ChapterCard extends StatelessWidget {
               Provider.of<ContentProvider>(context, listen: false)
                   .deleteDownloadedChapter(chapter.id);
             },
-            child: Text('Delete'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
             ),
+            child: const Text('Delete'),
           ),
         ],
       ),

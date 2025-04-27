@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart';
+
+@immutable
 class ChapterModel {
   final String id;
   final String title;
@@ -7,13 +10,14 @@ class ChapterModel {
   final String semester;
   final String curriculum;
   final String language;
-  final String pdfUrl; // URL for PDF file (or local path if downloaded)
+  final String? pdfUrl; // URL for PDF file (or local path if downloaded)
   final bool isDownloaded;
   final bool isBookmarked;
   final String? localPath; // Local storage path after download
-  final int totalPages;
+  final int? totalPages;
+  final bool isTeachMode;
 
-  ChapterModel({
+  const ChapterModel({
     required this.id,
     required this.title,
     required this.description,
@@ -22,11 +26,12 @@ class ChapterModel {
     required this.semester,
     required this.curriculum,
     required this.language,
-    required this.pdfUrl,
+    this.pdfUrl,
     this.isDownloaded = false,
     this.isBookmarked = false,
     this.localPath,
-    required this.totalPages,
+    this.totalPages,
+    this.isTeachMode = false,
   });
 
   // Create a copy with updated fields
@@ -44,6 +49,7 @@ class ChapterModel {
     bool? isBookmarked,
     String? localPath,
     int? totalPages,
+    bool? isTeachMode,
   }) {
     return ChapterModel(
       id: id ?? this.id,
@@ -59,6 +65,7 @@ class ChapterModel {
       isBookmarked: isBookmarked ?? this.isBookmarked,
       localPath: localPath ?? this.localPath,
       totalPages: totalPages ?? this.totalPages,
+      isTeachMode: isTeachMode ?? this.isTeachMode,
     );
   }
 
@@ -73,11 +80,12 @@ class ChapterModel {
       'semester': semester,
       'curriculum': curriculum,
       'language': language,
-      'pdfUrl': pdfUrl,
-      'isDownloaded': isDownloaded,
-      'isBookmarked': isBookmarked,
-      'localPath': localPath,
-      'totalPages': totalPages,
+      'pdf_url': pdfUrl,
+      'is_downloaded': isDownloaded,
+      'is_bookmarked': isBookmarked,
+      'local_path': localPath,
+      'total_pages': totalPages,
+      'is_teach_mode': isTeachMode,
     };
   }
 
@@ -92,11 +100,12 @@ class ChapterModel {
       semester: json['semester'],
       curriculum: json['curriculum'],
       language: json['language'],
-      pdfUrl: json['pdfUrl'],
-      isDownloaded: json['isDownloaded'] ?? false,
-      isBookmarked: json['isBookmarked'] ?? false,
-      localPath: json['localPath'],
-      totalPages: json['totalPages'] ?? 0,
+      pdfUrl: json['pdf_url'],
+      isDownloaded: json['is_downloaded'] ?? false,
+      isBookmarked: json['is_bookmarked'] ?? false,
+      localPath: json['local_path'],
+      totalPages: json['total_pages'],
+      isTeachMode: json['is_teach_mode'] ?? false,
     );
   }
 }

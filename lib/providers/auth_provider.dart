@@ -1,136 +1,141 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'user_provider.dart';
 
 class AuthProvider with ChangeNotifier {
+  final _supabase = Supabase.instance.client;
   bool _isAuthenticated = false;
   bool _isLoading = false;
-  String? _authMethod; // 'phone' or 'email'
-  String? _phoneNumber;
+  String? _authMethod;
   String? _email;
-  String? _verificationId;
-  String? _otp;
-  Timer? _resendTimer;
-  int _resendTimeLeft = 0;
 
-  // Getters
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   String? get authMethod => _authMethod;
-  String? get phoneNumber => _phoneNumber;
   String? get email => _email;
-  String? get verificationId => _verificationId;
-  int get resendTimeLeft => _resendTimeLeft;
 
-  // For demo purposes, we'll use a mock OTP verification
-  // In a real app, this would use Firebase Auth or similar service
-  Future<bool> sendOTP({required String phoneOrEmail, required String method}) async {
-    _isLoading = true;
-    notifyListeners();
-
+  Future<bool> login(String email, String password, {UserProvider? userProvider}) async {
     try {
-      // Store the auth method and credential
-      _authMethod = method;
-      if (method == 'phone') {
-        _phoneNumber = phoneOrEmail;
-        _email = null;
-      } else {
-        _email = phoneOrEmail;
-        _phoneNumber = null;
-      }
-
-      // Mock server delay
-      await Future.delayed(Duration(seconds: 2));
-
-      // Generate a random verification ID
-      _verificationId = _generateRandomString(16);
-      
-      // For testing purposes, we'll set a fixed OTP
-      // In production, this would be sent via SMS or email
-      _otp = '123456';
-      
-      // Start the resend timer
-      _startResendTimer();
-      
-      _isLoading = false;
+      _isLoading = true;
+      _authMethod = 'email';
+      _email = email;
       notifyListeners();
-      return true;
-    } catch (e) {
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
 
-  Future<bool> verifyOTP(String enteredOTP) async {
-    _isLoading = true;
-    notifyListeners();
+      final response = await _supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
 
-    try {
-      // Mock verification delay
-      await Future.delayed(Duration(seconds: 1));
-
-      // Check if the entered OTP matches the generated one
-      if (enteredOTP == _otp) {
+      if (response.user != null) {
         _isAuthenticated = true;
-        _cancelResendTimer();
-        _isLoading = false;
+        await _storeAuthData(
+          token: response.session?.accessToken ?? '',
+          method: 'email',
+          identifier: email,
+        );
+        
+        if (userProvider != null) {
+          await userProvider.createOrUpdateUserWithEmail(email);
+        }
+        
         notifyListeners();
         return true;
-      } else {
-        _isLoading = false;
-        notifyListeners();
-        return false;
       }
+      return false;
     } catch (e) {
+      debugPrint('Login error: $e');
+      return false;
+    } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<bool> signUp(String email, String password) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final response = await _supabase.auth.signUp(
+        email: email,
+        password: password,
+      );
+
+      return response.user != null;
+    } catch (e) {
+      debugPrint('SignUp error: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> checkAuthStatus() async {
+    try {
+      final session = _supabase.auth.currentSession;
+      _isAuthenticated = session != null;
+      
+      if (_isAuthenticated) {
+        _authMethod = 'email';
+        _email = session?.user.email;
+      }
+      
+      notifyListeners();
+      return _isAuthenticated;
+    } catch (e) {
+      debugPrint('Error checking auth status: $e');
       return false;
     }
   }
 
-  void logout() {
-    _isAuthenticated = false;
-    _authMethod = null;
-    _phoneNumber = null;
-    _email = null;
-    _verificationId = null;
-    _otp = null;
-    _cancelResendTimer();
-    notifyListeners();
+  Future<void> logout() async {
+    try {
+      await _supabase.auth.signOut();
+      _isAuthenticated = false;
+      _authMethod = null;
+      _email = null;
+      
+      // Clear stored login data
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Logout error: $e');
+    }
   }
 
-  void _startResendTimer() {
-    _resendTimeLeft = 30; // 30 seconds countdown
-    _cancelResendTimer();
-    
-    _resendTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (_resendTimeLeft > 0) {
-        _resendTimeLeft--;
-        notifyListeners();
-      } else {
-        _cancelResendTimer();
-      }
-    });
+  Future<void> _storeAuthData({
+    required String token,
+    required String method,
+    required String identifier,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+      await prefs.setString('auth_method', method);
+      await prefs.setString('email', identifier);
+      await prefs.setBool('is_authenticated', true);
+    } catch (e) {
+      debugPrint('Error storing auth data: $e');
+    }
   }
 
-  void _cancelResendTimer() {
-    _resendTimer?.cancel();
-    _resendTimer = null;
-  }
-
-  // Helper method to generate a random string for verification ID
-  String _generateRandomString(int length) {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    final random = Random();
-    return String.fromCharCodes(
-      List.generate(length, (index) => chars.codeUnitAt(random.nextInt(chars.length)))
-    );
-  }
-
-  @override
-  void dispose() {
-    _cancelResendTimer();
-    super.dispose();
+  // Check if user exists by email
+  Future<bool> userExists(String email) async {
+    try {
+      final response = await _supabase
+          .from('users')
+          .select('id')
+          .eq('email', email)
+          .maybeSingle();
+      return response != null;
+    } catch (e) {
+      debugPrint('Error checking if user exists: $e');
+      return false;
+    }
   }
 }

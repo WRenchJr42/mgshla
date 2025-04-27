@@ -6,20 +6,22 @@ import '../../widgets/drawer_menu.dart';
 import '../lesson/lesson_view_screen.dart';
 
 class DownloadsScreen extends StatelessWidget {
+  const DownloadsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Downloads'),
+        title: const Text('My Downloads'),
       ),
-      drawer: DrawerMenu(),
+      drawer: const DrawerMenu(),
       body: SafeArea(
         child: Consumer<ContentProvider>(
           builder: (context, contentProvider, _) {
             final downloadedChapters = contentProvider.downloadedChapters;
             
             if (contentProvider.isLoading) {
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             }
@@ -29,17 +31,17 @@ class DownloadsScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.download_done_outlined,
                       size: 64,
                       color: Colors.grey,
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text(
                       'No downloaded content',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       'Downloaded chapters will appear here',
                       style: Theme.of(context).textTheme.bodyMedium,
@@ -50,44 +52,44 @@ class DownloadsScreen extends StatelessWidget {
             }
             
             return ListView.builder(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               itemCount: downloadedChapters.length,
               itemBuilder: (context, index) {
                 final chapter = downloadedChapters[index];
                 
                 return Card(
-                  margin: EdgeInsets.only(bottom: 16),
+                  margin: const EdgeInsets.only(bottom: 16),
                   child: Padding(
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
                             Container(
-                              padding: EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: Colors.green.shade50,
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: Icon(
+                              child: const Icon(
                                 Icons.download_done,
                                 color: Colors.green,
                               ),
                             ),
-                            SizedBox(width: 16),
+                            const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     chapter.title,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                     ),
                                   ),
-                                  SizedBox(height: 4),
+                                  const SizedBox(height: 4),
                                   Text(
                                     '${chapter.subject} | ${chapter.grade}',
                                     style: TextStyle(
@@ -100,7 +102,7 @@ class DownloadsScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -108,8 +110,8 @@ class DownloadsScreen extends StatelessWidget {
                               onPressed: () {
                                 _showDeleteConfirmation(context, contentProvider, chapter.id);
                               },
-                              icon: Icon(Icons.delete_outline, color: Colors.red),
-                              label: Text(
+                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                              label: const Text(
                                 'Delete',
                                 style: TextStyle(color: Colors.red),
                               ),
@@ -128,8 +130,8 @@ class DownloadsScreen extends StatelessWidget {
                                   ),
                                 );
                               },
-                              icon: Icon(Icons.visibility),
-                              label: Text('View'),
+                              icon: const Icon(Icons.visibility),
+                              label: const Text('View'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Theme.of(context).primaryColor,
                               ),
@@ -152,14 +154,14 @@ class DownloadsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Download'),
-        content: Text('Are you sure you want to delete this downloaded chapter? This action cannot be undone.'),
+        title: const Text('Delete Download'),
+        content: const Text('Are you sure you want to delete this downloaded chapter? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -169,16 +171,16 @@ class DownloadsScreen extends StatelessWidget {
               await contentProvider.deleteDownloadedChapter(chapterId);
               
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Chapter deleted successfully'),
                   backgroundColor: Colors.green,
                 ),
               );
             },
-            child: Text('Delete'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
             ),
+            child: const Text('Delete'),
           ),
         ],
       ),

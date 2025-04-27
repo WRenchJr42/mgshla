@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/content_provider.dart';
-import '../../models/chapter_model.dart';
 import '../../widgets/filter_dialog.dart';
 import '../home/home_screen.dart';
 
 class ChapterSelectionScreen extends StatefulWidget {
+  const ChapterSelectionScreen({super.key});
+
   @override
   _ChapterSelectionScreenState createState() => _ChapterSelectionScreenState();
 }
@@ -27,7 +28,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
   void _showFilterDialog() {
     showDialog(
       context: context,
-      builder: (context) => FilterDialog(),
+      builder: (context) => const FilterDialog(),
     );
   }
 
@@ -38,7 +39,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
 
     try {
       // In a real app, you might save user preferences or selected filters
-      await Future.delayed(Duration(seconds: 1)); // Simulate network request
+      await Future.delayed(const Duration(seconds: 1)); // Simulate network request
       
       setState(() {
         _isLoading = false;
@@ -47,7 +48,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
       // Navigate to home screen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } catch (e) {
       setState(() {
@@ -55,7 +56,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Failed to save preferences. Please try again.'),
           backgroundColor: Colors.red,
         ),
@@ -67,7 +68,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Choose Chapters'),
+        title: const Text('Choose Chapters'),
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
@@ -82,7 +83,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
                 textAlign: TextAlign.center,
               ),
               
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               
               Text(
                 'Select filters to find relevant chapters',
@@ -90,7 +91,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
                 textAlign: TextAlign.center,
               ),
               
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               
               // Filter Categories
               Consumer<ContentProvider>(
@@ -133,7 +134,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
                 },
               ),
               
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               
               // Selected Filters
               Consumer<ContentProvider>(
@@ -141,7 +142,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
                   final activeFilters = contentProvider.activeFilters;
                   
                   if (activeFilters.isEmpty) {
-                    return Padding(
+                    return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
                       child: Text(
                         'No filters selected. Tap on any category to select filters.',
@@ -159,7 +160,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
                     children: activeFilters.entries.map((entry) {
                       return Chip(
                         label: Text('${entry.key}: ${entry.value}'),
-                        deleteIcon: Icon(Icons.close, size: 16),
+                        deleteIcon: const Icon(Icons.close, size: 16),
                         onDeleted: () {
                           contentProvider.clearFilter(entry.key);
                         },
@@ -170,33 +171,33 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
                 },
               ),
               
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // Clear Filters Button
               Consumer<ContentProvider>(
                 builder: (context, contentProvider, _) {
                   if (contentProvider.activeFilters.isEmpty) {
-                    return SizedBox.shrink();
+                    return const SizedBox.shrink();
                   }
                   
                   return TextButton.icon(
                     onPressed: () {
                       contentProvider.clearAllFilters();
                     },
-                    icon: Icon(Icons.clear_all),
-                    label: Text('Clear All Filters'),
+                    icon: const Icon(Icons.clear_all),
+                    label: const Text('Clear All Filters'),
                   );
                 },
               ),
               
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // Preview of filtered chapters
               Expanded(
                 child: Consumer<ContentProvider>(
                   builder: (context, contentProvider, _) {
                     if (contentProvider.isLoading) {
-                      return Center(
+                      return const Center(
                         child: CircularProgressIndicator(),
                       );
                     }
@@ -204,7 +205,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
                     final filteredChapters = contentProvider.filteredChapters;
                     
                     if (filteredChapters.isEmpty) {
-                      return Center(
+                      return const Center(
                         child: Text(
                           'No chapters found matching the selected filters.',
                           textAlign: TextAlign.center,
@@ -219,15 +220,15 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
                         final chapter = filteredChapters[index];
                         
                         return Card(
-                          margin: EdgeInsets.symmetric(vertical: 4),
+                          margin: const EdgeInsets.symmetric(vertical: 4),
                           child: ListTile(
                             title: Text(chapter.title),
                             subtitle: Text(
                               '${chapter.subject} | ${chapter.grade} | ${chapter.curriculum}',
-                              style: TextStyle(fontSize: 12),
+                              style: const TextStyle(fontSize: 12),
                             ),
-                            trailing: Icon(Icons.arrow_forward_ios, size: 16),
-                            contentPadding: EdgeInsets.symmetric(
+                            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                            contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 8,
                             ),
@@ -239,13 +240,16 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
                 ),
               ),
               
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // Continue Button
               ElevatedButton(
                 onPressed: _isLoading ? null : _continueToHome,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
                 child: _isLoading
-                    ? SizedBox(
+                    ? const SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
@@ -253,10 +257,7 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : Text('Continue to Home'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                ),
+                    : const Text('Continue to Home'),
               ),
             ],
           ),
@@ -268,14 +269,6 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
   Widget _buildFilterButton(String label, String? activeValue, VoidCallback onTap) {
     return OutlinedButton(
       onPressed: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(activeValue ?? label),
-          SizedBox(width: 4),
-          Icon(Icons.arrow_drop_down, size: 20),
-        ],
-      ),
       style: OutlinedButton.styleFrom(
         side: BorderSide(
           color: activeValue != null
@@ -285,6 +278,14 @@ class _ChapterSelectionScreenState extends State<ChapterSelectionScreen> {
         backgroundColor: activeValue != null
             ? Theme.of(context).primaryColor.withOpacity(0.1)
             : null,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(activeValue ?? label),
+          const SizedBox(width: 4),
+          const Icon(Icons.arrow_drop_down, size: 20),
+        ],
       ),
     );
   }
